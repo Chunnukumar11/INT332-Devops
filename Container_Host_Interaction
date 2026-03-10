@@ -1,0 +1,411 @@
+# Container and Host Interaction
+
+## Communication Between Container and Host
+
+Docker containers run in an isolated environment, but they can still interact with the host system in different ways.  
+Below are common techniques used for communication between containers and the host.
+
+---
+
+# 1. Port Mapping
+
+## Access Container Services from Host
+
+```bash
+# Run nginx container and map port
+docker run -d -p 8080:80 --name webserver nginx
+
+# Open in browser
+http://localhost:8080
+Mapping Multiple Ports
+docker run -d \
+  -p 8080:80 \
+  -p 8443:443 \
+  --name webserver \
+  nginx
+
+Example:
+
+8080 → HTTP access
+
+8443 → HTTPS access
+
+Access Using Host IP
+
+Containers can also be accessed from other machines on the same network.
+
+http://host-ip:8080
+http://192.168.1.100:8080
+2. Volume Mounting (Sharing Files)
+Mount Host Directory to Container
+docker run -it -v $(pwd):/app ubuntu bash
+
+Inside the container, /app contains the files from the host's current directory.
+
+Create File in Container and Access from Host
+docker run -it -v /tmp/mydata:/data ubuntu bash
+
+# Inside container
+echo "Hello from container" > /data/test.txt
+
+On host system:
+
+ls /tmp/mydata
+cat /tmp/mydata/test.txt
+
+The file is visible on both host and container.
+
+Persistent Storage Example
+docker run -d \
+  --name mysql_db \
+  -v mysql_data:/var/lib/mysql \
+  -e MYSQL_ROOT_PASSWORD=secret \
+  mysql
+
+Even if the container is removed, the data stored in the volume remains safe.
+
+3. Environment Variables
+Pass Variables to Container
+docker run -e COLLEGE=CSE -it ubuntu bash
+
+Inside container:
+
+echo $COLLEGE
+
+Output:
+
+CSE
+Pass Multiple Variables
+docker run \
+  -e APP_NAME=myapp \
+  -e LOG_LEVEL=debug \
+  -e DB_HOST=localhost \
+  -it ubuntu bash
+Using Environment File
+
+Create environment file:
+
+echo "APP_NAME=myapp" > .env
+echo "LOG_LEVEL=info" >> .env
+
+Run container with environment file:
+
+docker run --env-file .env -it ubuntu bash
+4. Executing Commands in Containers
+Enter Running Container
+docker exec -it container_name /bin/bash
+Execute Commands Without Opening Shell
+docker exec container_name ls /
+docker exec container_name pwd
+Creating Files Inside Container
+docker exec myapp mkdir /app
+docker exec myapp bash -c 'echo "Hello Docker" > /app/data.txt'
+docker exec myapp cat /app/data.txt
+5. Container Networking
+Communication Between Containers
+docker network create mynetwork
+
+Run containers on same network:
+
+docker run -d --name web --network mynetwork nginx
+docker run -d --name app --network mynetwork ubuntu sleep 1000
+
+Test connection:
+
+docker exec app ping web
+Exposing Container Ports
+
+Dockerfile example:
+
+EXPOSE 8080
+
+Run container:
+
+docker run -d -p 8080:8080 myapp
+
+Access service:
+
+curl http://localhost:8080
+6. Logs and Monitoring
+View Container Logs
+docker logs container_name
+
+Follow logs in real time:
+
+docker logs -f container_name
+
+Show last 50 lines:
+
+docker logs --tail 50 container_name
+
+Logs with timestamps:
+
+docker logs --timestamps container_name
+Inspect Container
+docker inspect container_name
+
+Get container IP:
+
+docker inspect -f '{{.NetworkSettings.IPAddress}}' container_name
+Monitor Resource Usage
+docker stats container_name
+
+View stats for all containers:
+
+docker stats
+7. Copy Files Between Host and Container
+Host → Container
+docker cp local_file.txt container_name:/container/path/
+
+Example:
+
+docker cp index.html webserver:/usr/share/nginx/html/
+Container → Host
+docker cp container_name:/container/file.txt ./local_path/
+
+Example:
+
+docker cp webserver:/etc/nginx/nginx.conf ./backup/
+Practical Examples
+Example 1 – Local Web Development
+docker run -d \
+  --name dev_server \
+  -p 8000:8000 \
+  -v $(pwd):/app \
+  -e DEBUG=true \
+  python:3.9 \
+  python -m http.server 8000 --directory /app
+
+Files edited on host will automatically reflect inside the container.
+
+Example 2 – Database with Persistent Storage
+docker volume create pgdata
+
+Run PostgreSQL:
+
+docker run -d \
+  --name postgres_db \
+  -e POSTGRES_PASSWORD=secret \
+  -v pgdata:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  postgres:13
+
+Data remains available even after container restart.
+
+Quick Reference
+Task	Command
+Port mapping	docker run -p 8080:80 image
+Mount directory	docker run -v /host:/container image
+Set environment variable	docker run -e VAR=value image
+Execute command	docker exec -it container cmd
+View logs	docker logs container
+Copy files	docker cp file container:/path
+Create network	docker network create name
+Container IP	docker inspect container
+
+अगर चाहो तो मैं तुम्हारे लिए **पूरे Docker repo की सभी files को same style में final version** भी बना सकता हूँ ताकि तुम्हारा **GitHub repo बिल्कुल professional DevOps project जैसा लगे**.
+ek hi me 
+
+Chunnu, main tumhara poora content ek hi file me (same style + thoda wording change) karke de raha hoon. Tum ise container_host_interaction.md me direct paste kar sakte ho.
+
+# Container and Host Interaction
+
+## Introduction
+
+Docker containers usually run in an isolated environment.  
+However, they can still communicate with the host system and other containers using several methods such as port mapping, volumes, environment variables, and networking.
+
+This section explains how containers interact with the host machine.
+
+---
+
+# 1. Port Mapping
+
+## Accessing Container Services from Host
+
+Port mapping allows a container service to be accessed from the host system.
+
+```bash
+# Run nginx container and map port
+docker run -d -p 8080:80 --name webserver nginx
+
+Open in browser:
+
+http://localhost:8080
+Mapping Multiple Ports
+docker run -d \
+  -p 8080:80 \
+  -p 8443:443 \
+  --name webserver \
+  nginx
+
+Example:
+
+8080 → HTTP
+
+8443 → HTTPS
+
+Access Using Host IP
+
+Containers can also be accessed using the host machine’s IP address.
+
+http://host-ip:8080
+http://192.168.1.100:8080
+2. Volume Mounting (Sharing Files)
+
+Volumes allow file sharing between host and container.
+
+Mount Host Directory
+docker run -it -v $(pwd):/app ubuntu bash
+
+Inside the container, /app will contain the files from the host directory.
+
+Create File in Container and Access from Host
+docker run -it -v /tmp/mydata:/data ubuntu bash
+
+# Inside container
+echo "Hello from container" > /data/test.txt
+
+Check on host machine:
+
+ls /tmp/mydata
+cat /tmp/mydata/test.txt
+
+The file is visible on both host and container.
+
+Persistent Data Example
+docker run -d \
+  --name mysql_db \
+  -v mysql_data:/var/lib/mysql \
+  -e MYSQL_ROOT_PASSWORD=secret \
+  mysql
+
+The data stored in the volume remains even if the container is removed.
+
+3. Environment Variables
+
+Environment variables can be passed from the host to the container.
+
+Pass Single Variable
+docker run -e COLLEGE=CSE -it ubuntu bash
+
+Check inside container:
+
+echo $COLLEGE
+
+Output:
+
+CSE
+Pass Multiple Variables
+docker run \
+  -e APP_NAME=myapp \
+  -e LOG_LEVEL=debug \
+  -e DB_HOST=localhost \
+  -it ubuntu bash
+Use Environment File
+
+Create environment file:
+
+echo "APP_NAME=myapp" > .env
+echo "LOG_LEVEL=info" >> .env
+
+Run container with env file:
+
+docker run --env-file .env -it ubuntu bash
+4. Container Execution
+
+Containers can be interacted with by executing commands inside them.
+
+Enter Container
+docker exec -it container_name /bin/bash
+Execute Commands
+docker exec container_name ls /
+docker exec container_name pwd
+Create Files Inside Container
+docker exec myapp mkdir /app
+docker exec myapp bash -c 'echo "Hello Docker" > /app/data.txt'
+docker exec myapp cat /app/data.txt
+5. Docker Networking
+
+Networking allows containers to communicate with each other.
+
+Create Network
+docker network create mynetwork
+Run Containers in Same Network
+docker run -d --name web --network mynetwork nginx
+docker run -d --name app --network mynetwork ubuntu sleep 1000
+Test Communication
+docker exec app ping web
+
+Containers on the same network can communicate using container names.
+
+Expose Ports
+
+Dockerfile example:
+
+EXPOSE 8080
+
+Run container:
+
+docker run -d -p 8080:8080 myapp
+
+Access service:
+
+curl http://localhost:8080
+6. Logs and Monitoring
+
+Docker provides commands to view logs and monitor containers.
+
+View Logs
+docker logs container_name
+
+Follow logs in real time:
+
+docker logs -f container_name
+
+Last 50 log lines:
+
+docker logs --tail 50 container_name
+
+Logs with timestamps:
+
+docker logs --timestamps container_name
+Inspect Container
+docker inspect container_name
+
+Get container IP:
+
+docker inspect -f '{{.NetworkSettings.IPAddress}}' container_name
+Monitor Resources
+docker stats container_name
+
+Monitor all containers:
+
+docker stats
+7. Copy Files Between Host and Container
+Host to Container
+docker cp local_file.txt container_name:/container/path/
+
+Example:
+
+docker cp index.html webserver:/usr/share/nginx/html/
+Container to Host
+docker cp container_name:/container/file.txt ./local_path/
+
+Example:
+
+docker cp webserver:/etc/nginx/nginx.conf ./backup/
+Quick Command Reference
+Operation	Command
+Port mapping	docker run -p 8080:80 image
+Mount directory	docker run -v /host:/container image
+Set environment variable	docker run -e VAR=value image
+Execute command	docker exec -it container cmd
+View logs	docker logs container
+Copy files	docker cp file container:/path
+Create network	docker network create name
+Container IP	docker inspect container
+
+Author
+Chunnu Kumar
+Docker DevOps Lab
