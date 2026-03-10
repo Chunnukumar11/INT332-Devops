@@ -1,129 +1,149 @@
-# Docker Images
+Docker Images - In Detail
+What is a Docker Image?
+A Docker image is a lightweight, standalone, executable package that contains:
 
-Docker image ek lightweight package hota hai jisme application ko run karne ke liye sabhi required files aur dependencies hoti hain.  
-Isme application code, libraries, runtime environment aur configuration files include hote hain.
+Application code
+Runtime environment
+System tools and libraries
+Environment variables
+Default commands
+Creating Docker Images
+Method 1: Using Dockerfile
+A Dockerfile is a text file with instructions to build an image.
 
-Docker image se hi container create kiya jata hai.
+Basic Dockerfile Example
+# Base image
+FROM ubuntu:20.04
 
----
+# Metadata
+LABEL author="DevOps Team"
+LABEL version="1.0"
 
-## What is a Docker Image?
+# Install packages
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    nano
 
-Docker image ek **read-only template** hota hai jise use karke containers run kiye jate hain.
+# Set working directory
+WORKDIR /app
 
-Docker image me include hota hai:
+# Copy files
+COPY . /app
 
-- Application code
-- System libraries
-- Dependencies
-- Environment configuration
-- Startup commands
+# Expose port
+EXPOSE 8080
 
-Ek hi image se multiple containers create kiye ja sakte hain.
+# Set environment variable
+ENV APP_NAME=myapp
 
----
+# Run command when container starts
+CMD ["bash"]
+Build image from Dockerfile
+# Build with tag
+docker build -t myimage:1.0 .
 
-## Pull Image from Docker Hub
+# Build with custom Dockerfile
+docker build -f Dockerfile -t myimage:v1 .
 
-Docker Hub ek online registry hai jahan se images download ki ja sakti hain.
+# Build with build arguments
+docker build --build-arg VERSION=1.0 -t myimage:1.0 .
 
-Example commands:
+# Build without cache
+docker build --no-cache -t myimage:1.0 .
+Dockerfile Instructions
+Instruction	Purpose	Example
+FROM	Base image	FROM ubuntu:20.04
+RUN	Execute command	RUN apt-get install nginx
+COPY	Copy files from host	COPY app.js /app/
+ADD	Copy and extract	ADD archive.tar /app/
+WORKDIR	Set working directory	WORKDIR /app
+EXPOSE	Document port	EXPOSE 8080
+ENV	Set environment variable	ENV NODE_ENV=production
+CMD	Default command	CMD ["node", "app.js"]
+ENTRYPOINT	Executable	ENTRYPOINT ["python"]
+USER	Run as user	USER appuser
+VOLUME	Mount point	VOLUME /app/data
+Image Layers
+Docker images are built in layers:
 
-```
-docker pull ubuntu
-docker pull nginx
-docker pull mysql
-docker pull node
-```
+FROM ubuntu:20.04           # Layer 1
+RUN apt-get update          # Layer 2
+RUN apt-get install nginx   # Layer 3
+COPY app.conf /etc/nginx/   # Layer 4
+CMD ["nginx", "-g", "daemon off;"] # Layer 5
+Each layer is cached. If a layer doesn't change, Docker reuses it.
 
-Ye commands Docker Hub se images download karte hain.
+Tagging Images
+Tag an image
+docker tag old_name:old_tag new_name:new_tag
 
----
+# Example
+docker tag myimage:1.0 myimage:latest
+docker tag myimage:1.0 myregistry.com/myimage:1.0
+Image naming convention
+[REGISTRY/]NAME[:TAG]
 
-## List Available Images
-
-System me available images dekhne ke liye:
-
-```
+Examples:
+ubuntu
+nginx:1.19
+docker.io/ubuntu:20.04
+myregistry.com/myapp:1.0
+Viewing Image Information
+List all images
 docker images
-```
+View image details
+docker inspect image_name
+View image history (layers)
+docker history image_name
+Search for images
+docker search nginx
+Pushing Images to Registry
+Login to Docker Hub
+docker login
+docker login registry.example.com
+Push image to registry
+docker push myimage:1.0
+docker push myregistry.com/myimage:1.0
+Logout
+docker logout
+Best Practices for Dockerfile
+✅ DO:
 
-Is command se image name, tag, image ID aur size show hota hai.
+Use specific base image tags (avoid latest)
+Minimize layers by combining RUN commands
+Use .dockerignore to exclude unnecessary files
+Run as non-root user when possible
+Clean up package manager cache
+❌ DON'T:
 
----
-
-## Remove Docker Image
-
-Agar koi image delete karni ho to:
-
-```
-docker rmi image_id
-```
-
-Example:
-
-```
-docker rmi nginx
-```
-
----
-
-## Build Docker Image
-
-Dockerfile ka use karke custom image banayi ja sakti hai.
-
-Example command:
-
-```
-docker build -t myimage:v1 .
-```
-
-Yaha:
-
-- `-t` image ko tag dene ke liye use hota hai  
-- `myimage:v1` image ka naam aur version hai
-
----
-
-## Example Dockerfile
-
-```
+Use latest tag in production
+Run as root without necessity
+Copy entire directory when not needed
+Create large images with unnecessary dependencies
+Example: Custom Nginx Image
 FROM nginx:alpine
 
-COPY index.html /usr/share/nginx/html/
+LABEL author="DevOps" \
+      version="1.0" \
+      description="Custom Nginx"
+
+# Copy custom config
+COPY default.conf /etc/nginx/conf.d/default.conf
+
+# Copy HTML files
+COPY index.html /usr/share/nginx/html/index.html
+
+# Create non-root user
+RUN addgroup -g 1001 -S nginx && \
+    adduser -S -D -H -u 1001 -h /var/cache/nginx \
+    -s /sbin/nologin -c "Nginx user" -G nginx nginx
+
+USER nginx
 
 EXPOSE 80
-```
 
-Image build karne ke baad container run kar sakte hain.
-
-```
-docker run -d -p 8080:80 myimage:v1
-```
-
----
-
-## Image Tagging
-
-Docker images ko alag versions dene ke liye tags use kiye jate hain.
-
-Example:
-
-```
-docker tag myimage:v1 myimage:latest
-```
-
-Isse ek hi image ke multiple versions manage kiye ja sakte hain.
-
----
-
-## Conclusion
-
-Docker images containerization ka main component hain.  
-Images ki help se applications ko easily package aur deploy kiya ja sakta hai.
-
----
-
-Author  
-Chunnu Kumar  
-Docker DevOps Lab
+CMD ["nginx", "-g", "daemon off;"]
+Build and run
+docker build -t custom-nginx:v1 .
+docker run -d -p 8080:80 custom-nginx:v1
