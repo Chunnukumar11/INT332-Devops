@@ -1,30 +1,27 @@
-# Node.js Docker Project
+# Nginx Docker Project
 
 ## Overview
 
-This is a Docker Node.js application demonstrating containerization of a Node.js Express server. It includes REST API endpoints, health checks, and Docker best practices.
+This is a custom Nginx web server running in Docker. It demonstrates containerization of a web server with security best practices.
 
 ## Project Structure
 
 ```
-node-app/
-├── Dockerfile              # Container definition
-├── package.json           # Dependencies
-├── app.js                 # Application code
-├── .dockerignore          # Files to exclude
-└── README.md              # This file
+nginx-app/
+├── Dockerfile           # Container definition
+├── index.html          # Web content
+├── default.conf        # Nginx configuration
+└── README.md           # This file
 ```
 
 ## Features
 
 ✅ **Alpine Linux** - Lightweight base image  
-✅ **Express.js** - Web framework  
-✅ **Health Check** - Automated container health monitoring  
 ✅ **Non-root user** - Security best practice  
-✅ **REST API** - Multiple endpoints  
-✅ **Graceful Shutdown** - Proper signal handling  
-✅ **Memory Monitoring** - Real-time stats  
-✅ **Logging** - Detailed request logging  
+✅ **Custom configuration** - Optimized Nginx settings  
+✅ **Gzip compression** - Performance optimization  
+✅ **Security headers** - XSS and clickjacking protection  
+✅ **Caching** - Optimized static file serving  
 
 ## Build Instructions
 
@@ -32,29 +29,28 @@ node-app/
 
 ```bash
 # Navigate to project directory
-cd node-app
+cd nginx-app
 
 # Build image
-docker build -t node-demo:v1 .
+docker build -t custom-nginx:v1 .
 
 # Run container
-docker run -d -p 3000:3000 --name node-app node-demo:v1
+docker run -d -p 8080:80 --name nginx-server custom-nginx:v1
 
 # View logs
-docker logs node-app
+docker logs nginx-server
 
 # Access browser
-http://localhost:3000
+http://localhost:8080
 ```
 
-### Method 2: Build with Custom Tag
+### Method 2: Build with Labels
 
 ```bash
 docker build \
-    -t myregistry/node-demo:v1 \
     --label version=1.0 \
     --label author="DevOps Team" \
-    .
+    -t custom-nginx:v1 .
 ```
 
 ## Usage
@@ -63,291 +59,120 @@ docker build \
 
 ```bash
 # Basic run
-docker run -d -p 3000:3000 node-demo:v1
+docker run -d -p 8080:80 custom-nginx:v1
 
-# With name and environment
+# With name and additional options
 docker run -d \
-    --name nodeapp \
-    -p 3000:3000 \
-    -e NODE_ENV=production \
-    node-demo:v1
-
-# With resource limits
-docker run -d \
-    --name nodeapp \
-    -p 3000:3000 \
+    --name nginx-web \
+    -p 8080:80 \
     --memory 512m \
     --cpus 1 \
-    node-demo:v1
-
-# With logging
-docker run -d \
-    --name nodeapp \
-    -p 3000:3000 \
-    --log-driver json-file \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
-    node-demo:v1
+    --restart=unless-stopped \
+    custom-nginx:v1
 ```
 
-### Container management
+### Stop container
 
 ```bash
-# Stop container
-docker stop nodeapp
+docker stop nginx-web
+```
 
-# Start stopped container
-docker start nodeapp
+### Remove container
 
-# Remove container
-docker rm nodeapp
+```bash
+docker rm nginx-web
+```
 
-# View logs
-docker logs nodeapp
-docker logs -f nodeapp        # Follow logs
-docker logs --tail 50 nodeapp # Last 50 lines
+### View logs
+
+```bash
+docker logs nginx-web
+docker logs -f nginx-web    # Follow logs
 ```
 
 ### Execute commands
 
 ```bash
 # Enter container shell
-docker exec -it nodeapp /bin/sh
+docker exec -it nginx-web /bin/sh
 
-# Check node version
-docker exec nodeapp node --version
+# View Nginx configuration
+docker exec nginx-web cat /etc/nginx/conf.d/default.conf
 
-# Check npm version
-docker exec nodeapp npm --version
-
-# List files
-docker exec nodeapp ls -la
-```
-
-## API Endpoints
-
-### 1. Home Endpoint
-
-```bash
-curl http://localhost:3000
-```
-
-Response:
-```json
-{
-  "message": "🐳 Welcome to Docker DevOps Lab - Node.js App",
-  "status": "running",
-  "timestamp": "2024-01-15T10:30:45.123Z",
-  "version": "1.0.0",
-  "environment": "production"
-}
-```
-
-### 2. Health Check
-
-```bash
-curl http://localhost:3000/health
-```
-
-Response:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:45.123Z",
-  "uptime": 234.567
-}
-```
-
-### 3. Application Info
-
-```bash
-curl http://localhost:3000/api/info
-```
-
-Response:
-```json
-{
-  "appName": "Docker Node.js Lab",
-  "version": "1.0.0",
-  "nodejs": "v14.21.0",
-  "platform": "linux",
-  "environment": "production",
-  "port": 3000
-}
-```
-
-### 4. Docker Info
-
-```bash
-curl http://localhost:3000/api/docker-info
-```
-
-Response:
-```json
-{
-  "container": "Running in Docker",
-  "image": "node:14-alpine",
-  "features": ["Express.js Framework", "Alpine Linux", ...],
-  "endpoints": [...]
-}
-```
-
-### 5. Environment Variables
-
-```bash
-curl http://localhost:3000/api/env
-```
-
-Response:
-```json
-{
-  "NODE_ENV": "production",
-  "PORT": 3000,
-  "APP_NAME": "Node Docker App"
-}
-```
-
-### 6. Memory Usage
-
-```bash
-curl http://localhost:3000/api/memory
-```
-
-Response:
-```json
-{
-  "rss": "45 MB",
-  "heapTotal": "38 MB",
-  "heapUsed": "22 MB",
-  "external": "1 MB"
-}
+# Test Nginx configuration
+docker exec nginx-web nginx -t
 ```
 
 ## Dockerfile Explanation
 
 ### Base Image
 ```dockerfile
-FROM node:14-alpine
+FROM nginx:alpine
 ```
-- Official Node.js image
-- Alpine Linux keeps size small (~150MB)
+- Uses official Nginx image
+- Alpine Linux keeps image small (~50MB vs 200MB+)
 
-### Working Directory
+### Labels
 ```dockerfile
-WORKDIR /app
+LABEL author="DevOps Team" \
+      version="1.0" \
+      description="Custom Nginx Web Server"
 ```
-- Sets working directory for all commands
+- Metadata for image identification
 
-### Copy Dependencies
+### Copy Configuration
 ```dockerfile
-COPY package*.json ./
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY index.html /usr/share/nginx/html/index.html
 ```
-- package.json and package-lock.json (if exists)
-
-### Install Dependencies
-```dockerfile
-RUN npm install --production
-```
-- Installs only production dependencies
-- Excludes devDependencies (smaller image)
-
-### Copy Application
-```dockerfile
-COPY app.js .
-```
-- Copies application code
+- Custom Nginx configuration
+- Custom HTML content
 
 ### Security - Non-root User
 ```dockerfile
-RUN addgroup -g 1001 -S appuser
-USER appuser
+RUN addgroup -g 1001 -S nginx && \
+    adduser -S -D -H -u 1001 ...
+USER nginx
 ```
-- Creates dedicated app user
-- Runs container as non-root
+- Creates dedicated nginx user
+- Runs container as non-root (security best practice)
 
-### Health Check
+### Port Exposure
 ```dockerfile
-HEALTHCHECK --interval=30s --timeout=3s ...
+EXPOSE 80
 ```
-- Docker automatically monitors container health
-- Restarts if unhealthy
+- Declares port 80 as service port
 
-## Environment Variables
-
-```bash
-# Set environment variables at runtime
-docker run -e NODE_ENV=production \
-           -e APP_NAME="My App" \
-           -e PORT=3000 \
-           node-demo:v1
+### Start Command
+```dockerfile
+CMD ["nginx", "-g", "daemon off;"]
 ```
+- Runs Nginx in foreground (required for Docker)
 
-Inside container, access via `process.env.VARIABLE_NAME`
+## Configuration Features
 
-## Volume Mounting
-
-### Mount source code
-
-```bash
-# Development with live reload
-docker run -it \
-    -v $(pwd):/app \
-    -w /app \
-    -p 3000:3000 \
-    node:14-alpine \
-    npm run dev
+### Gzip Compression
+```nginx
+gzip on;
+gzip_types text/plain text/css ...;
 ```
+- Compresses responses for faster loading
 
-### Mount logs directory
-
-```bash
-docker run -d \
-    -p 3000:3000 \
-    -v logs:/app/logs \
-    node-demo:v1
+### Security Headers
+```nginx
+add_header X-Frame-Options "SAMEORIGIN";
+add_header X-Content-Type-Options "nosniff";
+add_header X-XSS-Protection "1; mode=block";
 ```
+- Protection against common web attacks
 
-## Networking
-
-### Access between containers
-
-```bash
-# Create network
-docker network create mynet
-
-# Run database
-docker run -d --name db --network mynet postgres
-
-# Run app with network
-docker run -d \
-    --name app \
-    --network mynet \
-    -p 3000:3000 \
-    -e DATABASE_URL=postgresql://db:5432/mydb \
-    node-demo:v1
+### Caching
+```nginx
+location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+    expires 30d;
+}
 ```
-
-## Performance Tips
-
-✅ Use Alpine Linux base  
-✅ Install only production dependencies  
-✅ Use .dockerignore to exclude files  
-✅ Enable gzip compression  
-✅ Use persistent volume for logs  
-✅ Set resource limits  
-✅ Use health checks  
-✅ Implement proper logging  
-
-## Security Best Practices
-
-✅ Run as non-root user  
-✅ Keep dependencies updated  
-✅ Don't hardcode secrets  
-✅ Use .dockerignore  
-✅ Scan images for vulnerabilities  
-✅ Use security headers  
-✅ Implement rate limiting  
-✅ Validate input  
+- Static files cached for 30 days
 
 ## Troubleshooting
 
@@ -355,48 +180,79 @@ docker run -d \
 
 ```bash
 # Check logs
-docker logs nodeapp
+docker logs container_name
 
-# Check if port in use
-docker ps -a
+# Try running with different command
+docker run -it custom-nginx:v1 /bin/sh
 
-# Rebuild image
-docker build -t node-demo:v1 .
+# Verify image
+docker images | grep custom-nginx
 ```
 
-### Port 3000 already in use
+### Port already in use
 
 ```bash
 # Use different port
-docker run -d -p 3001:3000 node-demo:v1
+docker run -d -p 8081:80 custom-nginx:v1
 
-# Or find and stop existing container
-docker ps
-docker stop container_id
+# Find what's using port 8080
+# (System specific command)
 ```
 
-### Dependencies not installing
+### Access denied
 
 ```bash
-# Check package.json syntax
-docker run -it node:14-alpine npm list
+# Check file permissions
+docker exec -it nginx-web ls -la /usr/share/nginx/html
 
-# Rebuild with verbose output
-docker build --verbose -t node-demo:v1 .
+# Fix permissions
+docker exec nginx-web chown -R nginx:nginx /usr/share/nginx/html
 ```
 
-### Container exits immediately
+## Customization
+
+### Change port mapping
 
 ```bash
-# Check application logs
-docker logs nodeapp
-
-# Try running interactively
-docker run -it node-demo:v1 /bin/sh
-
-# Run with npm start
-docker run -it node:14-alpine npm start
+docker run -d -p 9000:80 custom-nginx:v1
+# Access at http://localhost:9000
 ```
+
+### Mount custom HTML
+
+```bash
+docker run -d \
+    -p 8080:80 \
+    -v $(pwd)/myhtml:/usr/share/nginx/html \
+    custom-nginx:v1
+```
+
+### Add environment variables
+
+```bash
+docker run -d \
+    -p 8080:80 \
+    -e APP_NAME="My Web App" \
+    custom-nginx:v1
+```
+
+## Performance Tips
+
+✅ Use Alpine Linux for smaller images  
+✅ Enable gzip compression  
+✅ Use caching headers  
+✅ Optimize images and CSS  
+✅ Set resource limits  
+✅ Use HTTP/2 protocol  
+
+## Security Best Practices
+
+✅ Run as non-root user  
+✅ Use security headers  
+✅ Keep base image updated  
+✅ Remove unnecessary packages  
+✅ Use read-only root filesystem  
+✅ Regular security scanning  
 
 ## Deployment
 
@@ -407,47 +263,32 @@ docker run -it node:14-alpine npm start
 docker login
 
 # Tag image
-docker tag node-demo:v1 yourusername/node-demo:v1
+docker tag custom-nginx:v1 yourusername/custom-nginx:v1
 
 # Push
-docker push yourusername/node-demo:v1
+docker push yourusername/custom-nginx:v1
 ```
 
-### Docker Compose Example
+### Docker Compose
 
 ```yaml
-version: '3.8'
+version: '3'
 services:
-  app:
+  nginx:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "8080:80"
     environment:
-      NODE_ENV: production
       APP_NAME: "Docker Lab"
     restart: unless-stopped
     mem_limit: 512m
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-```
-
-Run with Docker Compose:
-
-```bash
-docker-compose up -d
-docker-compose logs -f
-docker-compose stop
 ```
 
 ## Learning Resources
 
-- [Node.js Documentation](https://nodejs.org/en/docs/)
-- [Express.js Guide](https://expressjs.com/)
-- [Docker Official Node Image](https://hub.docker.com/_/node)
+- [Nginx Documentation](https://nginx.org/en/docs/)
+- [Docker Official Nginx Image](https://hub.docker.com/_/nginx)
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
 
