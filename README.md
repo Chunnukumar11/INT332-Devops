@@ -1,368 +1,453 @@
-# Docker DevOps Practice Lab 🐳
+# Node.js Docker Project
 
-This repository contains Docker practice notes, command references, and small containerized projects created during DevOps laboratory sessions.  
-The goal of this repository is to help understand Docker fundamentals, practice container commands, and build basic containerized applications.
+## Overview
 
-This project can also be useful for students preparing for DevOps interviews and learning container technology step-by-step.
+This is a Docker Node.js application demonstrating containerization of a Node.js Express server. It includes REST API endpoints, health checks, and Docker best practices.
 
----
-
-## 📚 Topics Covered
-
-The repository includes important Docker concepts and hands-on practice such as:
-
-- Introduction to Docker and Containerization
-- Docker Images and Containers
-- Common Docker Commands
-- Environment Variables in Containers
-- Host and Container Interaction
-- Docker Volumes for Data Persistence
-- Docker Networking Basics
-- Creating Custom Docker Images using Dockerfile
-- Small Docker Projects (Nginx and Node.js)
-- Docker Lifecycle and Container Management
-
----
-
-## 🐳 Common Docker Commands
-
-### Pull Docker Images
-
-Use the following commands to download images from Docker Hub.
+## Project Structure
 
 ```
-docker pull ubuntu
-docker pull nginx
-docker pull alpine
-docker pull mysql
-docker pull mongo
-docker pull node
+node-app/
+├── Dockerfile              # Container definition
+├── package.json           # Dependencies
+├── app.js                 # Application code
+├── .dockerignore          # Files to exclude
+└── README.md              # This file
 ```
 
----
+## Features
 
-### Running Containers
+✅ **Alpine Linux** - Lightweight base image  
+✅ **Express.js** - Web framework  
+✅ **Health Check** - Automated container health monitoring  
+✅ **Non-root user** - Security best practice  
+✅ **REST API** - Multiple endpoints  
+✅ **Graceful Shutdown** - Proper signal handling  
+✅ **Memory Monitoring** - Real-time stats  
+✅ **Logging** - Detailed request logging  
 
-Run a basic container
+## Build Instructions
 
-```
-docker run hello-world
-```
+### Method 1: Using Docker
 
-Run container with interactive terminal
+```bash
+# Navigate to project directory
+cd node-app
 
-```
-docker run -it ubuntu bash
-```
-
-Run container in background with port mapping
-
-```
-docker run -d -p 8080:80 nginx
-```
-
-Run container with environment variable
-
-```
-docker run -it -e COLLEGE=DEVOPS ubuntu bash
-```
-
-Run container with a custom name
-
-```
-docker run -d --name mycontainer ubuntu
-```
-
----
-
-## ⚙️ Container Management Commands
-
-Check running containers
-
-```
-docker ps
-```
-
-Check all containers
-
-```
-docker ps -a
-```
-
-Stop a running container
-
-```
-docker stop container_name
-```
-
-Start a stopped container
-
-```
-docker start container_name
-```
-
-Remove a container
-
-```
-docker rm container_id
-```
-
-View container logs
-
-```
-docker logs container_name
-docker logs -f container_name
-```
-
-Run commands inside container
-
-```
-docker exec -it container_id /bin/bash
-```
-
----
-
-## 📦 Docker Image Commands
-
-View all images
-
-```
-docker images
-```
-
-Delete an image
-
-```
-docker rmi image_id
-```
-
-Build image using Dockerfile
-
-```
-docker build -t image_name:tag .
-```
-
-Remove unused images
-
-```
-docker image prune
-```
-
----
-
-## 🔎 Docker System Information
-
-Check Docker version
-
-```
-docker --version
-```
-
-View Docker system information
-
-```
-docker info
-```
-
-Inspect container details
-
-```
-docker inspect container_name
-```
-
----
-
-## 📁 Repository Structure
-
-```
-docker-devops-practice/
-│
-├── README.md
-│
-├── docker-basics/
-│   ├── docker_commands.md
-│   ├── docker_images.md
-│   └── docker_run_examples.md
-│
-├── container-interaction/
-│   └── container_host_interaction.md
-│
-├── docker-volumes/
-│   └── volume_commands.md
-│
-├── docker-projects/
-│   │
-│   ├── nginx-project/
-│   │   ├── Dockerfile
-│   │   ├── index.html
-│   │   └── nginx.conf
-│   │
-│   └── node-project/
-│       ├── Dockerfile
-│       ├── app.js
-│       ├── package.json
-│       └── .dockerignore
-│
-└── practice-questions/
-    └── docker_questions.md
-```
-
----
-
-## 🚀 Example Docker Projects
-
-### Nginx Web Server Project
-
-Navigate to project folder
-
-```
-cd docker-projects/nginx-project
-```
-
-Build Docker image
-
-```
-docker build -t custom-nginx:v1 .
-```
-
-Run the container
-
-```
-docker run -d -p 8080:80 --name nginx-container custom-nginx:v1
-```
-
-Open browser
-
-```
-http://localhost:8080
-```
-
----
-
-### Node.js Container Project
-
-Move to project directory
-
-```
-cd docker-projects/node-project
-```
-
-Build image
-
-```
+# Build image
 docker build -t node-demo:v1 .
-```
 
-Run container
+# Run container
+docker run -d -p 3000:3000 --name node-app node-demo:v1
 
-```
-docker run -d -p 3000:3000 --name node-container node-demo:v1
-```
+# View logs
+docker logs node-app
 
-Open browser
-
-```
+# Access browser
 http://localhost:3000
 ```
 
----
+### Method 2: Build with Custom Tag
 
-## 🔄 Docker Lifecycle
-
-Docker container lifecycle normally follows three stages:
-
-**Build**  
-Create a Docker image using a Dockerfile.
-
-**Ship**  
-Push the image to Docker Hub or another container registry.
-
-**Run**  
-Deploy containers from the built image.
-
----
-
-## 💾 Docker Volume Example
-
-Create a Docker volume
-
-```
-docker volume create mydata
+```bash
+docker build \
+    -t myregistry/node-demo:v1 \
+    --label version=1.0 \
+    --label author="DevOps Team" \
+    .
 ```
 
-Run container using volume
+## Usage
 
+### Run container
+
+```bash
+# Basic run
+docker run -d -p 3000:3000 node-demo:v1
+
+# With name and environment
+docker run -d \
+    --name nodeapp \
+    -p 3000:3000 \
+    -e NODE_ENV=production \
+    node-demo:v1
+
+# With resource limits
+docker run -d \
+    --name nodeapp \
+    -p 3000:3000 \
+    --memory 512m \
+    --cpus 1 \
+    node-demo:v1
+
+# With logging
+docker run -d \
+    --name nodeapp \
+    -p 3000:3000 \
+    --log-driver json-file \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
+    node-demo:v1
 ```
-docker run -dit --name mycontainer -v mydata:/app/data ubuntu
+
+### Container management
+
+```bash
+# Stop container
+docker stop nodeapp
+
+# Start stopped container
+docker start nodeapp
+
+# Remove container
+docker rm nodeapp
+
+# View logs
+docker logs nodeapp
+docker logs -f nodeapp        # Follow logs
+docker logs --tail 50 nodeapp # Last 50 lines
 ```
 
-Enter container
+### Execute commands
 
+```bash
+# Enter container shell
+docker exec -it nodeapp /bin/sh
+
+# Check node version
+docker exec nodeapp node --version
+
+# Check npm version
+docker exec nodeapp npm --version
+
+# List files
+docker exec nodeapp ls -la
 ```
-docker exec -it mycontainer /bin/bash
+
+## API Endpoints
+
+### 1. Home Endpoint
+
+```bash
+curl http://localhost:3000
 ```
 
-Create file inside volume
-
+Response:
+```json
+{
+  "message": "🐳 Welcome to Docker DevOps Lab - Node.js App",
+  "status": "running",
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "version": "1.0.0",
+  "environment": "production"
+}
 ```
-mkdir /app/data
-echo "Hello Docker" > /app/data/test.txt
+
+### 2. Health Check
+
+```bash
+curl http://localhost:3000/health
 ```
 
-Data will remain stored even if the container is removed.
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "uptime": 234.567
+}
+```
 
----
+### 3. Application Info
 
-## 📖 Description of Important Files
+```bash
+curl http://localhost:3000/api/info
+```
 
-| File | Description |
-|-----|-------------|
-| docker_commands.md | Basic Docker command reference |
-| docker_images.md | Image creation and management |
-| container_host_interaction.md | Communication between host and container |
-| volume_commands.md | Docker volume usage |
-| docker_questions.md | Practice questions from lab |
+Response:
+```json
+{
+  "appName": "Docker Node.js Lab",
+  "version": "1.0.0",
+  "nodejs": "v14.21.0",
+  "platform": "linux",
+  "environment": "production",
+  "port": 3000
+}
+```
 
----
+### 4. Docker Info
 
-## 🎯 Use Cases
+```bash
+curl http://localhost:3000/api/docker-info
+```
 
-This repository can be useful for:
+Response:
+```json
+{
+  "container": "Running in Docker",
+  "image": "node:14-alpine",
+  "features": ["Express.js Framework", "Alpine Linux", ...],
+  "endpoints": [...]
+}
+```
 
-- DevOps practice and lab submissions  
-- Building a GitHub portfolio  
-- Preparing for internship interviews  
-- Learning Docker step by step  
-- Practicing container commands
+### 5. Environment Variables
 
----
+```bash
+curl http://localhost:3000/api/env
+```
 
-## 📚 Learning Modules
+Response:
+```json
+{
+  "NODE_ENV": "production",
+  "PORT": 3000,
+  "APP_NAME": "Node Docker App"
+}
+```
 
-**Unit 1** – Introduction to Docker and DevOps  
-**Unit 2** – Basic Docker Commands and Container Management  
-**Unit 3** – Docker Projects and Image Creation  
-**Unit 4** – Advanced Docker Features and Networking  
+### 6. Memory Usage
 
----
+```bash
+curl http://localhost:3000/api/memory
+```
 
-## 📝 How to Use This Repository
+Response:
+```json
+{
+  "rss": "45 MB",
+  "heapTotal": "38 MB",
+  "heapUsed": "22 MB",
+  "external": "1 MB"
+}
+```
 
-1. Clone the repository
-2. Navigate to the required folder
-3. Read the markdown notes
-4. Run Docker commands locally
-5. Practice projects and commands
+## Dockerfile Explanation
 
----
+### Base Image
+```dockerfile
+FROM node:14-alpine
+```
+- Official Node.js image
+- Alpine Linux keeps size small (~150MB)
 
-## 📄 License
+### Working Directory
+```dockerfile
+WORKDIR /app
+```
+- Sets working directory for all commands
 
-This repository is created for educational and learning purposes.
+### Copy Dependencies
+```dockerfile
+COPY package*.json ./
+```
+- package.json and package-lock.json (if exists)
 
----
+### Install Dependencies
+```dockerfile
+RUN npm install --production
+```
+- Installs only production dependencies
+- Excludes devDependencies (smaller image)
 
-## 👨‍💻 Author
+### Copy Application
+```dockerfile
+COPY app.js .
+```
+- Copies application code
 
-Chunnu Kumar  
-DevOps and Docker Learning Repository
+### Security - Non-root User
+```dockerfile
+RUN addgroup -g 1001 -S appuser
+USER appuser
+```
+- Creates dedicated app user
+- Runs container as non-root
+
+### Health Check
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=3s ...
+```
+- Docker automatically monitors container health
+- Restarts if unhealthy
+
+## Environment Variables
+
+```bash
+# Set environment variables at runtime
+docker run -e NODE_ENV=production \
+           -e APP_NAME="My App" \
+           -e PORT=3000 \
+           node-demo:v1
+```
+
+Inside container, access via `process.env.VARIABLE_NAME`
+
+## Volume Mounting
+
+### Mount source code
+
+```bash
+# Development with live reload
+docker run -it \
+    -v $(pwd):/app \
+    -w /app \
+    -p 3000:3000 \
+    node:14-alpine \
+    npm run dev
+```
+
+### Mount logs directory
+
+```bash
+docker run -d \
+    -p 3000:3000 \
+    -v logs:/app/logs \
+    node-demo:v1
+```
+
+## Networking
+
+### Access between containers
+
+```bash
+# Create network
+docker network create mynet
+
+# Run database
+docker run -d --name db --network mynet postgres
+
+# Run app with network
+docker run -d \
+    --name app \
+    --network mynet \
+    -p 3000:3000 \
+    -e DATABASE_URL=postgresql://db:5432/mydb \
+    node-demo:v1
+```
+
+## Performance Tips
+
+✅ Use Alpine Linux base  
+✅ Install only production dependencies  
+✅ Use .dockerignore to exclude files  
+✅ Enable gzip compression  
+✅ Use persistent volume for logs  
+✅ Set resource limits  
+✅ Use health checks  
+✅ Implement proper logging  
+
+## Security Best Practices
+
+✅ Run as non-root user  
+✅ Keep dependencies updated  
+✅ Don't hardcode secrets  
+✅ Use .dockerignore  
+✅ Scan images for vulnerabilities  
+✅ Use security headers  
+✅ Implement rate limiting  
+✅ Validate input  
+
+## Troubleshooting
+
+### Container won't start
+
+```bash
+# Check logs
+docker logs nodeapp
+
+# Check if port in use
+docker ps -a
+
+# Rebuild image
+docker build -t node-demo:v1 .
+```
+
+### Port 3000 already in use
+
+```bash
+# Use different port
+docker run -d -p 3001:3000 node-demo:v1
+
+# Or find and stop existing container
+docker ps
+docker stop container_id
+```
+
+### Dependencies not installing
+
+```bash
+# Check package.json syntax
+docker run -it node:14-alpine npm list
+
+# Rebuild with verbose output
+docker build --verbose -t node-demo:v1 .
+```
+
+### Container exits immediately
+
+```bash
+# Check application logs
+docker logs nodeapp
+
+# Try running interactively
+docker run -it node-demo:v1 /bin/sh
+
+# Run with npm start
+docker run -it node:14-alpine npm start
+```
+
+## Deployment
+
+### Push to Docker Hub
+
+```bash
+# Login
+docker login
+
+# Tag image
+docker tag node-demo:v1 yourusername/node-demo:v1
+
+# Push
+docker push yourusername/node-demo:v1
+```
+
+### Docker Compose Example
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      APP_NAME: "Docker Lab"
+    restart: unless-stopped
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+```
+
+Run with Docker Compose:
+
+```bash
+docker-compose up -d
+docker-compose logs -f
+docker-compose stop
+```
+
+## Learning Resources
+
+- [Node.js Documentation](https://nodejs.org/en/docs/)
+- [Express.js Guide](https://expressjs.com/)
+- [Docker Official Node Image](https://hub.docker.com/_/node)
+- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
+
