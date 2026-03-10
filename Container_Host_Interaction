@@ -332,6 +332,3 @@ docker logs -f myapp
 | Network create | `docker network create name` |
 | Container IP | `docker inspect container -f {{.Networks...IPAddress}}` |
 
-Author
-Chunnu Kumar
-Docker DevOps Lab
