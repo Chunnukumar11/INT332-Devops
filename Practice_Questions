@@ -1,0 +1,319 @@
+# Docker Practice Questions and Solutions
+
+This document provides a collection of practice questions and solutions related to Docker fundamentals.
+It covers basic commands, container operations, image management, networking, and storage concepts used in DevOps environments.
+
+---
+
+# Basic Docker Commands
+
+## Q1: Verify Docker Installation
+
+**Question:**
+How can you confirm that Docker is installed correctly on your system?
+
+**Answer:**
+
+```bash
+docker --version
+```
+
+Example output may look like:
+
+```bash
+Docker version 20.x.x, build xxxxx
+```
+
+To view detailed Docker system information:
+
+```bash
+docker info
+```
+
+---
+
+## Q2: Download and Run Ubuntu Container
+
+**Question:**
+Download the Ubuntu image from Docker Hub and start it in interactive mode.
+
+**Answer:**
+
+```bash
+docker pull ubuntu
+docker run -it ubuntu bash
+```
+
+Inside the container you can test commands such as:
+
+```bash
+ls /
+pwd
+cat /etc/os-release
+```
+
+---
+
+## Q3: Start Nginx Container with Port Mapping
+
+**Question:**
+Run an Nginx container and map host port **8080** to container port **80**.
+
+**Answer:**
+
+```bash
+docker run -d -p 8080:80 nginx
+```
+
+Access the web server using a browser:
+
+```
+http://localhost:8080
+```
+
+---
+
+## Q4: Use Environment Variables in a Container
+
+**Question:**
+Start an Ubuntu container with an environment variable `COLLEGE=CSE`.
+
+**Answer:**
+
+```bash
+docker run -it -e COLLEGE=CSE ubuntu bash
+```
+
+Check the variable inside the container:
+
+```bash
+echo $COLLEGE
+```
+
+Expected output:
+
+```
+CSE
+```
+
+---
+
+## Q5: Display Containers
+
+**Question:**
+What is the difference between `docker ps` and `docker ps -a`?
+
+**Answer:**
+
+```bash
+docker ps
+```
+
+Shows only **running containers**.
+
+```bash
+docker ps -a
+```
+
+Shows **all containers including stopped ones**.
+
+---
+
+# Container Management
+
+## Q6: Stop and Restart Container
+
+```bash
+docker stop mycontainer
+docker start mycontainer
+docker ps -a
+```
+
+---
+
+## Q7: Remove Containers
+
+Delete container using its ID:
+
+```bash
+docker rm abc123def456
+```
+
+Delete container using its name:
+
+```bash
+docker rm mycontainer
+```
+
+Remove all stopped containers:
+
+```bash
+docker container prune
+```
+
+---
+
+## Q8: Check Container Logs
+
+```bash
+docker logs webserver
+docker logs --tail 50 webserver
+docker logs -f webserver
+```
+
+---
+
+# Executing Commands in Containers
+
+## Q9: Run Commands Inside Container
+
+```bash
+docker exec myapp ls /app
+```
+
+Open interactive terminal:
+
+```bash
+docker exec -it myapp /bin/bash
+```
+
+---
+
+## Q10: Create Files in a Container
+
+```bash
+docker exec mycontainer mkdir /data
+docker exec mycontainer bash -c 'echo "Hello Docker" > /data/test.txt'
+docker exec mycontainer cat /data/test.txt
+```
+
+---
+
+# Docker Volumes
+
+## Q11: Create and Use a Named Volume
+
+```bash
+docker volume create mydata
+
+docker run -it --name mycontainer \
+-v mydata:/app/data \
+ubuntu bash
+```
+
+Inside container:
+
+```bash
+echo "Persistent data" > /app/data/file.txt
+```
+
+---
+
+## Q12: Test Data Persistence
+
+```bash
+docker stop container1
+docker rm container1
+```
+
+Run another container with the same volume:
+
+```bash
+docker run -it --name container2 -v mydata:/app/data ubuntu bash
+```
+
+Check file:
+
+```bash
+cat /app/data/file.txt
+```
+
+The file still exists because volumes store data permanently.
+
+---
+
+# Bind Mount Example
+
+## Q13: Mount Host Directory
+
+Linux / Mac:
+
+```bash
+docker run -it -v $(pwd):/workspace ubuntu bash
+```
+
+Windows PowerShell:
+
+```bash
+docker run -it -v ${PWD}:/workspace ubuntu bash
+```
+
+---
+
+# Docker Image Management
+
+## Q14: List and Delete Images
+
+```bash
+docker images
+docker rmi image_id
+docker image prune
+```
+
+---
+
+## Q15: Build Custom Image
+
+Example Dockerfile:
+
+```Dockerfile
+FROM ubuntu:20.04
+
+RUN apt-get update && apt-get install -y nginx
+
+EXPOSE 80
+
+CMD ["nginx","-g","daemon off;"]
+```
+
+Build image:
+
+```bash
+docker build -t mynginx:v1 .
+```
+
+Run container:
+
+```bash
+docker run -d -p 8080:80 mynginx:v1
+```
+
+---
+
+# Docker Networking
+
+## Q16: Create Custom Network
+
+```bash
+docker network create mynetwork
+```
+
+Run containers in the network:
+
+```bash
+docker run -d --name container1 --network mynetwork ubuntu sleep 1000
+docker run -d --name container2 --network mynetwork ubuntu sleep 1000
+```
+
+Test connection:
+
+```bash
+docker exec container2 ping container1
+```
+
+---
+
+# Author
+
+Chunnu Kumar
+Docker DevOps Learning Repository
