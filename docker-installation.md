@@ -160,7 +160,4 @@ Once Docker is installed, you can start creating images, running containers, and
 
 ---
 
-## Author
 
-Chunnu Kumar  
-DevOps Docker Learning Repository
